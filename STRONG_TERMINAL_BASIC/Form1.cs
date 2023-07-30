@@ -227,7 +227,6 @@ namespace STRONG_TERMINAL_BASIC
         serialPort1.Read(data_receive, 0, data_receive.Length);
       }
 
-
       if (flag_ASCII_HEX == true) // ASCII MODE ACTIVE
       {
         received_read_string = serialPort1.ReadLine();
@@ -256,7 +255,7 @@ namespace STRONG_TERMINAL_BASIC
           }
 		  // use for PREOTEUS SIMULATION
 		  // for virtual ports
-        System.Threading.Thread.Sleep(100);
+        //System.Threading.Thread.Sleep(100);
        // richTextBox1.AppendText(received_read_string);
 
         richTextBox1.AppendText("\n");
