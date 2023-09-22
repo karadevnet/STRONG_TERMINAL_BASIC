@@ -29,6 +29,7 @@
     private void InitializeComponent()
     {
       this.components = new System.ComponentModel.Container();
+      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
       this.serialPort1 = new System.IO.Ports.SerialPort(this.components);
       this.richTextBox1 = new System.Windows.Forms.RichTextBox();
       this.button1 = new System.Windows.Forms.Button();
@@ -42,6 +43,9 @@
       this.comboBox2 = new System.Windows.Forms.ComboBox();
       this.label1 = new System.Windows.Forms.Label();
       this.button7 = new System.Windows.Forms.Button();
+      this.button8 = new System.Windows.Forms.Button();
+      this.button9 = new System.Windows.Forms.Button();
+      this.label2 = new System.Windows.Forms.Label();
       this.SuspendLayout();
       // 
       // serialPort1
@@ -87,7 +91,7 @@
       this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
       this.textBox1.Location = new System.Drawing.Point(12, 599);
       this.textBox1.Name = "textBox1";
-      this.textBox1.Size = new System.Drawing.Size(497, 22);
+      this.textBox1.Size = new System.Drawing.Size(428, 22);
       this.textBox1.TabIndex = 3;
       // 
       // button3
@@ -132,6 +136,7 @@
       this.button6.TabIndex = 8;
       this.button6.Text = "SEND";
       this.button6.UseVisualStyleBackColor = true;
+      this.button6.Click += new System.EventHandler(this.button6_Click);
       // 
       // comboBox1
       // 
@@ -178,6 +183,40 @@
       this.button7.TabIndex = 12;
       this.button7.Text = "SETTINGS";
       this.button7.UseVisualStyleBackColor = true;
+      this.button7.Click += new System.EventHandler(this.button7_Click);
+      // 
+      // button8
+      // 
+      this.button8.BackColor = System.Drawing.Color.Red;
+      this.button8.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+      this.button8.ForeColor = System.Drawing.Color.Yellow;
+      this.button8.Location = new System.Drawing.Point(446, 598);
+      this.button8.Name = "button8";
+      this.button8.Size = new System.Drawing.Size(62, 25);
+      this.button8.TabIndex = 13;
+      this.button8.Text = "ASCII";
+      this.button8.UseVisualStyleBackColor = false;
+      this.button8.Click += new System.EventHandler(this.button8_Click);
+      // 
+      // button9
+      // 
+      this.button9.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+      this.button9.Location = new System.Drawing.Point(522, 513);
+      this.button9.Name = "button9";
+      this.button9.Size = new System.Drawing.Size(115, 25);
+      this.button9.TabIndex = 14;
+      this.button9.Text = "HELP";
+      this.button9.UseVisualStyleBackColor = true;
+      // 
+      // label2
+      // 
+      this.label2.AutoSize = true;
+      this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+      this.label2.Location = new System.Drawing.Point(523, 497);
+      this.label2.Name = "label2";
+      this.label2.Size = new System.Drawing.Size(111, 16);
+      this.label2.TabIndex = 15;
+      this.label2.Text = "=============";
       // 
       // Form1
       // 
@@ -185,6 +224,9 @@
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.SystemColors.ActiveCaption;
       this.ClientSize = new System.Drawing.Size(649, 633);
+      this.Controls.Add(this.label2);
+      this.Controls.Add(this.button9);
+      this.Controls.Add(this.button8);
       this.Controls.Add(this.button7);
       this.Controls.Add(this.label1);
       this.Controls.Add(this.comboBox2);
@@ -198,6 +240,7 @@
       this.Controls.Add(this.button1);
       this.Controls.Add(this.richTextBox1);
       this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+      this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
       this.MaximizeBox = false;
       this.Name = "Form1";
       this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -223,6 +266,9 @@
     private System.Windows.Forms.ComboBox comboBox2;
     private System.Windows.Forms.Label label1;
     private System.Windows.Forms.Button button7;
+    private System.Windows.Forms.Button button8;
+    private System.Windows.Forms.Button button9;
+    private System.Windows.Forms.Label label2;
   }
 }
 
