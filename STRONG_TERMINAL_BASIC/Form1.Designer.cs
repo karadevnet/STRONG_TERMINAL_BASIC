@@ -46,6 +46,7 @@
       this.button8 = new System.Windows.Forms.Button();
       this.button9 = new System.Windows.Forms.Button();
       this.label2 = new System.Windows.Forms.Label();
+      this.checkBox1 = new System.Windows.Forms.CheckBox();
       this.SuspendLayout();
       // 
       // serialPort1
@@ -218,12 +219,24 @@
       this.label2.TabIndex = 15;
       this.label2.Text = "=============";
       // 
+      // checkBox1
+      // 
+      this.checkBox1.AutoSize = true;
+      this.checkBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+      this.checkBox1.Location = new System.Drawing.Point(523, 75);
+      this.checkBox1.Name = "checkBox1";
+      this.checkBox1.Size = new System.Drawing.Size(111, 20);
+      this.checkBox1.TabIndex = 16;
+      this.checkBox1.Text = "ZERO BYTE";
+      this.checkBox1.UseVisualStyleBackColor = true;
+      // 
       // Form1
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.SystemColors.ActiveCaption;
       this.ClientSize = new System.Drawing.Size(649, 633);
+      this.Controls.Add(this.checkBox1);
       this.Controls.Add(this.label2);
       this.Controls.Add(this.button9);
       this.Controls.Add(this.button8);
@@ -269,6 +282,7 @@
     private System.Windows.Forms.Button button8;
     private System.Windows.Forms.Button button9;
     private System.Windows.Forms.Label label2;
+    private System.Windows.Forms.CheckBox checkBox1;
   }
 }
 

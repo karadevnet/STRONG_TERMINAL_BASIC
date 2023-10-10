@@ -359,7 +359,7 @@ namespace STRONG_TERMINAL_BASIC
         }
         ij = 0;
 
-        if (received_read_string.Contains("0"))
+        if (received_read_string.Contains("0") && checkBox1.Checked)
         {
           richTextBox1.AppendText("receive in ASCII >>>\n");
           richTextBox1.AppendText("THE STRING CONTAINS ZERO BYTES !!!\n");
@@ -373,7 +373,7 @@ namespace STRONG_TERMINAL_BASIC
           //richTextBox1.AppendText("\n");
           richTextBox1.ScrollToCaret();
         }
-           received_read_string = "";
+           //received_read_string = "";
       }
       else
       {
@@ -394,7 +394,9 @@ namespace STRONG_TERMINAL_BASIC
         //richTextBox1.AppendText("check_zeros_in_tail = " + check_zeros_in_tail + "\n");
         ij = 0;
         // END CHECK LAST ALL BYTES IN TAIL IF ARE ZEROS TO NOT PRINT THEM !!! 
+        
         richTextBox1.AppendText("receive in HEX >>>\n");
+
         while (ij < data_receive.Length - check_zeros_in_tail)
         {
           if (data_receive[ij] == 0x00)
@@ -429,18 +431,21 @@ namespace STRONG_TERMINAL_BASIC
           ij++;
          }
         ij = 0;
-        
-        while (ij < data_receive.Length)
-        {
-          data_receive[ij] = (byte)0x00;
-          ij++;
-        }
-        ij = 0;
-        richTextBox1.ScrollToCaret();
-         richTextBox1.AppendText("\n\n");
-        income_bytes = 0;
 
       }
+          // CLEAR INPUT BUFFER AND STRING RECEIVED WITH DIFFERENT LENGTH
+          // AFTER RECEIVE AND PRINT ALL DATA IN BYTES AND STRINGS
+          while (ij < data_receive.Length)
+          {
+            data_receive[ij] = (byte)0x00;
+            ij++;
+          }
+          ij = 0;
+          richTextBox1.ScrollToCaret();
+          richTextBox1.AppendText("\n");
+          income_bytes = 0;
+
+          received_read_string = "";
     }//=========== EDITED ROUTINE FOR AVOID MISSING FIRST BYTE =========
 
     private void button4_Click(object sender, EventArgs e)
