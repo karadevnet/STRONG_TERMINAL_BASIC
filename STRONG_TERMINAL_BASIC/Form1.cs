@@ -26,7 +26,7 @@ namespace STRONG_TERMINAL_BASIC
     string path_file_settings = @"settings.txt";
 
     string DEFAULT_COM_PORT = "DEFAULT_COM_PORT";
-    string DEFAULT_COM_PORT_SPPED = "DEFAULT_COM_PORT_SPPED";
+    string DEFAULT_COM_PORT_SPEED = "DEFAULT_COM_PORT_SPEED";
     string DEFAULT_COM_PORT_MODE = "";
     string string_ASCII_HEX_MODE = "";
     bool flag_ASCII_HEX = false;
@@ -36,10 +36,11 @@ namespace STRONG_TERMINAL_BASIC
     byte low_value = 0;
     byte send_value = 0;
     string string_no_spaces = "";
+    string LAST_USED_COM_PORT_NAME = "";
 
-    
-    
-    
+
+
+
     public byte Convert_to_byte(byte count_string) // convert ASCII HEX MESSAGE FROM LINE TO BYTE
     {
 
@@ -159,16 +160,26 @@ namespace STRONG_TERMINAL_BASIC
 
             richTextBox1.AppendText("serial : " + settings_lines[project_count + 1].Substring(17) + "\n");
             serialPort1.PortName = settings_lines[project_count + 1].Substring(17);
+            comboBox1.FindString(serialPort1.PortName);
+            comboBox1.SelectedItem = serialPort1.PortName;
+            // set function like global and use in get port button and disconnect button
+            // for read in two case same data for default project from settings file
+            // disable LAST_USED_COM_PORT_NAME = serialPort1.PortName; when you done
+            LAST_USED_COM_PORT_NAME = serialPort1.PortName;
 
             richTextBox1.AppendText("speed : " + settings_lines[project_count + 2].Substring(23) + "\n");
             serialPort1.BaudRate = int.Parse(settings_lines[project_count + 2].Substring(23));
+            comboBox2.FindString(serialPort1.BaudRate.ToString());
+            comboBox2.SelectedItem = serialPort1.BaudRate.ToString();
+
 
             richTextBox1.AppendText("mode ASCII / HEX : " + settings_lines[project_count + 3].Substring(22) + "\n");
             if (settings_lines[project_count + 3].Substring(22) == "ASCII")
-            { flag_ASCII_HEX = true; }
+            { flag_ASCII_HEX = true; button4.Text = "ASCII"; }
             if (settings_lines[project_count + 3].Substring(22) == "HEX")
-            { flag_ASCII_HEX = false; }
-          }
+            { flag_ASCII_HEX = false; button4.Text = "HEX"; }
+
+           }
           project_count++;
         }
         project_count = 0;
@@ -210,6 +221,15 @@ namespace STRONG_TERMINAL_BASIC
       richTextBox1.AppendText(count + " serial port are active\n");
       richTextBox1.ScrollToCaret();
 
+      if (LAST_USED_COM_PORT_NAME != "")
+      {
+        serialPort1.PortName = LAST_USED_COM_PORT_NAME;
+        comboBox1.FindString(LAST_USED_COM_PORT_NAME);
+        comboBox1.SelectedIndex = comboBox1.FindString(LAST_USED_COM_PORT_NAME);
+      }
+      else
+      { LAST_USED_COM_PORT_NAME = ""; }
+
     }
 
     private void button2_Click(object sender, EventArgs e)
@@ -231,9 +251,17 @@ namespace STRONG_TERMINAL_BASIC
       if (comboBox2.SelectedIndex == 4)
       { serialPort1.BaudRate = 115200; }
 
+      if (serialPort1.IsOpen)
+      {
+        serialPort1.DiscardInBuffer();
+        serialPort1.DiscardOutBuffer();
+        serialPort1.Close(); serialPort1.Dispose();
+        richTextBox1.AppendText(serialPort1.PortName.ToString() + " is CLOSED" + "\n");
+      }
+
        try
       {
-        if (!(serialPort1.IsOpen))
+        if (!serialPort1.IsOpen)
         {
           serialPort1.RtsEnable = true; // IMPORTANT RECEIVE FROM USB ARDUINO/PICO !!!!
           serialPort1.DtrEnable = true; // IMPORTANT RECEIVE FROM USB ARDUINO/PICO !!!!
@@ -335,45 +363,58 @@ namespace STRONG_TERMINAL_BASIC
        income_bytes++; // IMPORTANT COUNT++ TO GET MESSAGE
         serialPort1.Read(data_receive, 0, data_receive.Length);
       }
+     
       
       if (flag_ASCII_HEX == true) // ASCII MODE ACTIVE
       {
-        ij = 31;
-        while (data_receive.Length > ij)
-        {
-          if (data_receive[ij] == 0) { check_zeros_in_tail++; }
-          if (data_receive[ij] != 0) { break; }
-          ij--;
-        }
+        //ij = 31;
+        //while (data_receive.Length > ij)
+        //{
+        //  if (data_receive[ij] == 0) { check_zeros_in_tail++; }
+        //  if (data_receive[ij] != 0) { break; }
+        //  ij--;
+       // }
         //richTextBox1.AppendText("check_zeros_in_tail = " + check_zeros_in_tail + "\n");
-        ij = 0;
+       // ij = 0;
 
 
-        while ( ij < data_receive.Length - check_zeros_in_tail)
+        while ( ij < data_receive.Length)
         {
-          if (data_receive[ij] == 0)
-          { data_receive[ij] = 0x30; }
-
-            received_read_string += Encoding.ASCII.GetString(data_receive)[ij];
+          if (data_receive[ij] == 0 || data_receive[ij] == '\0')
+          { break; }// data_receive[ij] = 0x30; }
+          received_read_string += Encoding.ASCII.GetString(data_receive)[ij];
+          //if (data_receive[ij] != 0)
+          //{ received_read_string += Encoding.ASCII.GetString(data_receive)[ij]; }
           ij++;
         }
         ij = 0;
 
-        if (received_read_string.Contains("0") && checkBox1.Checked)
+        // if (received_read_string.Contains("0") && checkBox1.Checked)
+        // {
+        //   richTextBox1.AppendText("receive in ASCII >>>\n");
+        //   richTextBox1.AppendText("THE STRING CONTAINS ZERO BYTES !!!\n");
+        //   richTextBox1.AppendText(received_read_string + "\n");
+        //   richTextBox1.ScrollToCaret();
+        // }
+        // else
+        // {
+        if (received_read_string.EndsWith("\n"))
         {
-          richTextBox1.AppendText("receive in ASCII >>>\n");
-          richTextBox1.AppendText("THE STRING CONTAINS ZERO BYTES !!!\n");
-          richTextBox1.AppendText(received_read_string + "\n");
+          richTextBox1.AppendText(">>> receive in ASCII\n");
+          richTextBox1.AppendText(">>> " + received_read_string);
+          //richTextBox1.AppendText("\n");
           richTextBox1.ScrollToCaret();
         }
         else
         {
-          richTextBox1.AppendText("receive in ASCII >>>\n");
-          richTextBox1.AppendText(received_read_string + "\n");
-          //richTextBox1.AppendText("\n");
+          richTextBox1.AppendText(">>> receive in ASCII\n");
+          richTextBox1.AppendText(">>> " + received_read_string);
+          richTextBox1.AppendText("\n");
           richTextBox1.ScrollToCaret();
         }
-           //received_read_string = "";
+
+        // }
+        //received_read_string = "";
       }
       else
       {
@@ -395,7 +436,8 @@ namespace STRONG_TERMINAL_BASIC
         ij = 0;
         // END CHECK LAST ALL BYTES IN TAIL IF ARE ZEROS TO NOT PRINT THEM !!! 
         
-        richTextBox1.AppendText("receive in HEX >>>\n");
+        richTextBox1.AppendText("receive in HEX\n");
+         richTextBox1.AppendText(">>> ");
 
         while (ij < data_receive.Length - check_zeros_in_tail)
         {
@@ -408,7 +450,7 @@ namespace STRONG_TERMINAL_BASIC
         
         ij = 0;
 
-        if (check_hex_for_zeros > 0)
+        if (check_hex_for_zeros > 0 && checkBox1.Checked)
         {
           //richTextBox1.AppendText("receive in HEX >>>\n");
           richTextBox1.AppendText("THE STRING CONTAINS ZERO BYTES !!!\n");
@@ -416,22 +458,31 @@ namespace STRONG_TERMINAL_BASIC
           //richTextBox1.ScrollToCaret();
         }
 
-        while (ij < data_receive.Length - check_zeros_in_tail)
+         while (ij < data_receive.Length - check_zeros_in_tail)
         {
-          if (data_receive[ij] < 16)
-          {
-            richTextBox1.AppendText("0" + data_receive[ij].ToString("X") + " ");
+            if (data_receive[ij] < 16)
+            {
+              richTextBox1.AppendText("0" + data_receive[ij].ToString("X") + " ");
             //received_read_string += "0" + data_receive[ij].ToString("X") + " ";
+            //richTextBox1.ScrollToCaret();
           }
-          else if (data_receive[ij] > 15)
-          {
-            richTextBox1.AppendText(data_receive[ij].ToString("X") + " ");
+            else if (data_receive[ij] > 15)
+            {
+              richTextBox1.AppendText(data_receive[ij].ToString("X") + " ");
             //received_read_string += data_receive[ij].ToString("X") + " ";
+           // richTextBox1.ScrollToCaret();
           }
-          ij++;
+            if (ij == 15)
+              {
+            richTextBox1.AppendText("\n"); richTextBox1.AppendText(">>> ");
+            richTextBox1.ScrollToCaret();
+          }
+            ij++;
          }
         ij = 0;
 
+        richTextBox1.AppendText("\n\n");
+        richTextBox1.ScrollToCaret();
       }
           // CLEAR INPUT BUFFER AND STRING RECEIVED WITH DIFFERENT LENGTH
           // AFTER RECEIVE AND PRINT ALL DATA IN BYTES AND STRINGS
@@ -441,9 +492,9 @@ namespace STRONG_TERMINAL_BASIC
             ij++;
           }
           ij = 0;
-          richTextBox1.ScrollToCaret();
-          richTextBox1.AppendText("\n");
-          income_bytes = 0;
+          
+         
+           income_bytes = 0;
 
           received_read_string = "";
     }//=========== EDITED ROUTINE FOR AVOID MISSING FIRST BYTE =========
@@ -479,12 +530,14 @@ namespace STRONG_TERMINAL_BASIC
       {
         if (textBox1.TextLength > 0)
         {
-          richTextBox1.AppendText("<<< send\n");
-          richTextBox1.AppendText(send_text + "\n\n");
+          richTextBox1.AppendText("\n\n<<< send\n");
+          richTextBox1.AppendText("<<< " + send_text + "\n\n");
           richTextBox1.ScrollToCaret();
           if (serialPort1.IsOpen)
           {
             serialPort1.Write(send_text);
+            serialPort1.DiscardInBuffer();
+            serialPort1.DiscardOutBuffer();
           }
           else
           {
@@ -503,7 +556,7 @@ namespace STRONG_TERMINAL_BASIC
         if (textBox1.TextLength > 0)
         {
           //==================================================================
-          // ADD CODE TO EDIT SENDA DATA BYTES WITH SPACE BETWEEN BYTES
+          // ADD CODE TO EDIT SEND DATA BYTES WITH SPACE BETWEEN BYTES
           //==================================================================
           send_byte_to_serial();
           richTextBox1.AppendText("<<< send\n");
@@ -520,6 +573,8 @@ namespace STRONG_TERMINAL_BASIC
           if (serialPort1.IsOpen)
           {
             serialPort1.Write(data_send, 0, send_text.Length);
+            serialPort1.DiscardInBuffer();
+            serialPort1.DiscardOutBuffer();
           }
           else
           { serialPort1.Close();
@@ -528,12 +583,6 @@ namespace STRONG_TERMINAL_BASIC
           }
           //serialPort1.Write(255.ToString());
 
-          while (print_send_count < send_text.Length)
-          {
-            data_send[print_send_count] = 0;
-            print_send_count++;
-          }
-          print_send_count = 0;
 
         }
         else
@@ -544,6 +593,12 @@ namespace STRONG_TERMINAL_BASIC
 
       }
 
+      while (print_send_count < send_text.Length)
+      {
+        data_send[print_send_count] = 0;
+        print_send_count++;
+      }
+      print_send_count = 0;
     }
 
     private void button8_Click(object sender, EventArgs e)
@@ -592,38 +647,3 @@ namespace STRONG_TERMINAL_BASIC
 
   }
 }
-/*
-          while (check_space_count < space_count.Length - 1)
-          {
-            if (space_count[check_space_count] == ' ')
-            {
-              space_count[check_space_count] = send_text[check_space_count + 1];
-            }
-
-            check_space_count+=2;
-          }
-
-          richTextBox1.AppendText(check_space_count + "\n");
-
-          check_space_count = 0;
-
-          while (check_space_count < space_count.Length )
-           {
-            richTextBox1.AppendText(space_count[check_space_count].ToString());
-             richTextBox1.AppendText(space_count[check_space_count + 1].ToString() + " ");
-
-           check_space_count += 2;
-           }
-          check_space_count = 0;
-
-          while (check_space_count < space_count.Length)
-          {
-            //richTextBox1.AppendText(space_count[check_space_count].ToString());
-            //richTextBox1.AppendText(space_count[check_space_count + 1].ToString() + " ");
-            string_no_spaces += space_count[check_space_count];
-            check_space_count ++;
-          }
-          check_space_count = 0;
-          richTextBox1.AppendText(string_no_spaces.Length + "\n");
-          richTextBox1.AppendText("\n");
-         */
