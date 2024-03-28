@@ -9,7 +9,7 @@ have a three way to send data :
 
 ====     HAVE AND NEW FUNCTION ============
 
-IN SECOND TEXT FIELAD CAN INPUT AND SEND STRING DATA LIKE A LAST 4 BYTES AFTER A MAIN STRING / DATA
+IN SECOND TEXT FIELD CAN INPUT AND SEND STRING DATA LIKE A LAST 4 BYTES AFTER A MAIN STRING / DATA
 this cna be used in some systems like NEXTION HMI TOUCH DISPLAYS, when device prorocol is needed to have a tail with some bytes
 
 in second field you can set a bytes, that always are same for the device protocol. example : FF FF FF CC will be end transmision flag for device protocol.
