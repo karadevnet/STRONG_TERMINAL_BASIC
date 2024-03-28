@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
@@ -20,8 +21,13 @@ namespace STRONG_TERMINAL_BASIC
   public partial class Form1 : Form
   {
     byte[] data_receive = new byte[32];
-    byte[] data_send = new byte[32];
-    StreamReader streamReader = null;
+    byte[] data_send = new byte[48];
+	byte[] data_send_END = new byte[4];
+
+
+	StreamReader streamReader = null;
+
+
     string application_path = Application.ExecutablePath;
     string path_file_settings = @"settings.txt";
 
@@ -31,94 +37,283 @@ namespace STRONG_TERMINAL_BASIC
     string string_ASCII_HEX_MODE = "";
     bool flag_ASCII_HEX = false;
     bool flag_BYTE = false;
-    string[] settings_lines = { };
-    byte high_value = 0;
-    byte low_value = 0;
+	bool flag_BYTE_END = false;
+	string[] settings_lines = { };
+    
     byte send_value = 0;
     string string_no_spaces = "";
     string LAST_USED_COM_PORT_NAME = "";
 
+	string send_text = "";
+	string send_text_END = "";
 
-
-
-    public byte Convert_to_byte(byte count_string) // convert ASCII HEX MESSAGE FROM LINE TO BYTE
+	// ====================== SEND IN STRING FUNCTION ======================
+	public void send_in_string()
     {
+	  if (send_text.Length > 48)
+	  {
+		send_text = send_text.Substring(0, 48);
+		textBox1.Text = send_text;
+	  }
+	  //richTextBox1.AppendText("send_state_button = " + send_state_button + "\n");
+	  if (serialPort1.IsOpen)
+	  { serialPort1.Write(send_text); }
+	  else
+	  {
+		richTextBox1.AppendText("SERIAL PORT " + serialPort1.PortName + " IS CLOSED\n");
+		richTextBox1.ScrollToCaret();
+	  }
+	} // ====================== END SEND IN STRING FUNCTION ======================
 
-     byte string_letter = 0;
-      string send_text_from_line = textBox1.Text; 
-      //string send_text_from_line = string_no_spaces;
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	public void send_in_string_END()
+	{
+	  if (send_text_END.Length > 11)
+	  {
+		send_text_END = send_text_END.Substring(0, 11);
+		textBox2.Text = send_text_END;
+	  }
+	  //richTextBox1.AppendText("send_state_button = " + send_state_button + "\n");
+	  if (serialPort1.IsOpen)
+	  { serialPort1.Write(send_text_END); }
+	  else
+	  {
+		richTextBox1.AppendText("SERIAL PORT " + serialPort1.PortName + " IS CLOSED\n");
+		richTextBox1.ScrollToCaret();
+	  }
+	}
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+	// ====================== SEND STRING IN BYTES FUNCTION ======================
+	public void send_in_string_in_bytes()
+    {
+	  send_text = textBox1.Text;
+
+	  if (send_text.Length > 48)
+	  {
+		send_text = send_text.Substring(0, 48);
+		textBox1.Text = send_text;
+	  }
+
+	  byte print_send_count = 0;
+	  byte print_send_length = (byte)textBox1.TextLength;
+	  richTextBox1.AppendText("print_send_length = " + print_send_length + "\n");
+
+	  while (print_send_count < send_text.Length)
+	  {
+		if (send_text[print_send_count].Equals(" "))
+		{ print_send_count++; }
+		else
+		{
+		  data_send[print_send_count] = (byte)send_text[print_send_count];
+		  print_send_count++;
+		}
+	  }
+
+	  print_send_count = 0;
+
+	  richTextBox1.AppendText("<<< send\n");
+	  richTextBox1.AppendText("<<< ");
+
+	  while (print_send_count < print_send_length)
+	  {
+		richTextBox1.AppendText(data_send[print_send_count].ToString("X") + " ");
+		print_send_count++;
+	  }
+	  print_send_count = 0;
+	  richTextBox1.AppendText("\n");
+	  richTextBox1.ScrollToCaret();
+
+	  // CHECK IF SERIAL COM PORT IS OPEN
+	  if (serialPort1.IsOpen)
+	  { serialPort1.Write(data_send, 0, print_send_length); }
+	  else
+	  {
+		richTextBox1.AppendText("SERIAL PORT " + serialPort1.PortName + "IS CLOSED\n");
+		richTextBox1.ScrollToCaret();
+	  }
+	}// ====================== END SEND STRING IN BYTES FUNCTION ======================
+
+	// +++++++++++++++++++ SEND STRING IN BYTES FUNCTION +++++++++++++++++++++++++
+	public void send_in_string_in_bytes_END()
+	{
+	  if (send_text_END.Length > 11)
+	  {
+		send_text_END = send_text_END.Substring(0, 11);
+		textBox2.Text = send_text_END;
+	  }
+
+	  byte print_send_count_END = 0;
+	  byte print_send_length_END = (byte)textBox2.TextLength;
+	  richTextBox1.AppendText("print_send_length_END = " + print_send_length_END + "\n");
+
+	  while (print_send_count_END < send_text_END.Length)
+	  {
+		if (send_text_END[print_send_count_END].Equals(" "))
+		{ print_send_count_END++; }
+		else
+		{
+		  data_send[print_send_count_END] = (byte)send_text_END[print_send_count_END];
+		  print_send_count_END++;
+		}
+	  }
+
+	  print_send_count_END = 0;
+
+	  richTextBox1.AppendText("<<< send\n");
+	  richTextBox1.AppendText("<<< ");
+
+	  while (print_send_count_END < print_send_length_END)
+	  {
+		richTextBox1.AppendText(data_send[print_send_count_END].ToString("X") + " ");
+		print_send_count_END++;
+	  }
+	  print_send_count_END = 0;
+	  richTextBox1.AppendText("\n");
+	  richTextBox1.ScrollToCaret();
+
+	  // CHECK IF SERIAL COM PORT IS OPEN
+	  if (serialPort1.IsOpen)
+	  { serialPort1.Write(data_send, 0, print_send_length_END); }
+	  else
+	  {
+		richTextBox1.AppendText("SERIAL PORT " + serialPort1.PortName + "IS CLOSED\n");
+		richTextBox1.ScrollToCaret();
+	  }
+	}// ++++++++++++++++++++++ END SEND STRING IN BYTES FUNCTION ++++++++++++++++++++++
+
+	// ======================  SEND HEX STRING IN HEX BYTES FUNCTION ======================
+	public void send_HEX_string_in_HEX_bytes()
+    {
+	  byte print_send_count = 0;
+
+	  if (send_text.Length > 48)
+	  {
+		send_text = send_text.Substring(0, 48);
+		textBox1.Text = send_text;
+	  }
+
+	  // AUTO REMOVE PAUSE " " FROM ENTERED STRING IN FIELD
+	  if (send_text.EndsWith(" "))
+	  {
+		send_text = textBox1.Text.Substring(0, textBox1.Text.Length - 1);
+		textBox1.Text = send_text;
+	  }
+	  //richTextBox1.AppendText("send_state_button = " + send_state_button + "\n");
+	  try
+	  { 
+
+		data_send = send_text.Split().Select(s => byte.Parse(s, NumberStyles.HexNumber)).ToArray();
+
+		while (print_send_count < data_send.Length)
+		{
+		  richTextBox1.AppendText(data_send[print_send_count].ToString("X") + " ");
+		  print_send_count++;
+		}
+		print_send_count = 0;
+		richTextBox1.AppendText("\n\n");
+		richTextBox1.ScrollToCaret();
+
+		// CHECK IF SERIAL COM PORT IS OPEN
+		if (serialPort1.IsOpen)
+		{ serialPort1.Write(data_send, 0, data_send.Length); }
+		else
+		{
+		  richTextBox1.AppendText("SERIAL PORT IS CLOSED\n");
+		  richTextBox1.ScrollToCaret();
+		}
+
+	  }
+	  catch
+	  {
+		richTextBox1.AppendText("\nENTERED STRING IS INVALID FORMAT OR LENGTH IS ODD !!!\n");
+		richTextBox1.AppendText("CORRECT FORMAT IS\n");
+		richTextBox1.AppendText("AA 11 22 33 44 55 66 77 88 99 AA BB CC DD EE FF\n");
+		richTextBox1.AppendText("STRING CAN NOT END WITH EMPTY SPACE [ ]\n\n");
+		richTextBox1.ScrollToCaret();
+	  }
+	}   // ====================== END SEND HEX STRING IN HEX BYTES FUNCTION ======================
+
+	// +++++++++++++++++++ SEND HEX STRING IN HEX BYTES FUNCTION +++++++++++++++++++++++++
+	public void send_HEX_string_in_HEX_bytes_END()
+	{
+	  byte print_send_count = 0;
+
+	  if (send_text_END.Length > 48)
+	  {
+		send_text_END = send_text_END.Substring(0, 48);
+		textBox2.Text = send_text_END;
+	  }
+
+	  // AUTO REMOVE PAUSE " " FROM ENTERED STRING IN FIELD
+	  if (send_text_END.EndsWith(" "))
+	  {
+		send_text_END = textBox2.Text.Substring(0, textBox2.Text.Length - 1);
+		textBox2.Text = send_text_END;
+	  }
+	  //richTextBox1.AppendText("send_state_button = " + send_state_button + "\n");
+	  try
+	  {
+
+		data_send = send_text_END.Split().Select(s => byte.Parse(s, NumberStyles.HexNumber)).ToArray();
+
+		while (print_send_count < data_send.Length)
+		{
+		  richTextBox1.AppendText(data_send[print_send_count].ToString("X") + " ");
+		  print_send_count++;
+		}
+		print_send_count = 0;
+		richTextBox1.AppendText("\n\n");
+		richTextBox1.ScrollToCaret();
+
+		// CHECK IF SERIAL COM PORT IS OPEN
+		if (serialPort1.IsOpen)
+		{ serialPort1.Write(data_send, 0, data_send.Length); }
+		else
+		{
+		  richTextBox1.AppendText("SERIAL PORT IS CLOSED\n");
+		  richTextBox1.ScrollToCaret();
+		}
+
+	  }
+	  catch
+	  {
+		richTextBox1.AppendText("\nENTERED STRING IS INVALID FORMAT OR LENGTH IS ODD !!!\n");
+		richTextBox1.AppendText("CORRECT FORMAT IS\n");
+		richTextBox1.AppendText("AA 11 22 33 44 55 66 77 88 99 AA BB CC DD EE FF\n");
+		richTextBox1.AppendText("STRING CAN NOT END WITH EMPTY SPACE [ ]\n\n");
+		richTextBox1.ScrollToCaret();
+	  }
+	}// ====================== END SEND HEX STRING IN HEX BYTES FUNCTION ======================
+
+	// +++++++++++++++++++ SEND HEX STRING IN HEX BYTES FUNCTION +++++++++++++++++++++++++
+	//============================================================================================
 
 
-      if (send_text_from_line[count_string].ToString() == "0") { string_letter = 0; }
-        if (send_text_from_line[count_string].ToString() == "1") { string_letter = 1; }
-        if (send_text_from_line[count_string].ToString() == "2") { string_letter = 2; }
-        if (send_text_from_line[count_string].ToString() == "3") { string_letter = 3; }
-        if (send_text_from_line[count_string].ToString() == "4") { string_letter = 4; }
- 
-        if (send_text_from_line[count_string].ToString() == "5") { string_letter = 5; }
-        if (send_text_from_line[count_string].ToString() == "6") { string_letter = 6; }
-        if (send_text_from_line[count_string].ToString() == "7") { string_letter = 7; }
-        if (send_text_from_line[count_string].ToString() == "8") { string_letter = 8; }
-        if (send_text_from_line[count_string].ToString() == "9") { string_letter = 9; }
 
-        if (send_text_from_line[count_string].ToString() == "A") { string_letter = 10; }
-        if (send_text_from_line[count_string].ToString() == "B") { string_letter = 11; }
-        if (send_text_from_line[count_string].ToString() == "C") { string_letter = 12; }
-        if (send_text_from_line[count_string].ToString() == "D") { string_letter = 13; }
-        if (send_text_from_line[count_string].ToString() == "E") { string_letter = 14; }
-        if (send_text_from_line[count_string].ToString() == "F") { string_letter = 15; }
-
-      return string_letter;
-    }
-
-    public void send_byte_to_serial()
-    {     
-       byte count_string = 0;
-      string send_text_from_line = textBox1.Text;
-      //string send_text_from_line = string_no_spaces;
-      byte array_count = 0;
-
-
-      while (count_string < send_text_from_line.Length) //check 32 letters / numbers
-      {
-        high_value = (byte) (Convert_to_byte(count_string) << 4);
-        low_value = (byte)(Convert_to_byte((byte)(count_string + 1)));
-         data_send[array_count] = (byte)(high_value + low_value);
-        count_string += 2; array_count++;
-       }
-
-      count_string = 0; array_count = 0;
-
-      richTextBox1.AppendText("INPUT IN LINE IS :\n");
-      richTextBox1.AppendText(send_text_from_line + "\n");
-
-      //while (count_string < send_text_from_line.Length / 2) //check 32 letters / numbers
-     // {
-      //  if (data_send[count_string] < 16)
-      //  { richTextBox1.AppendText("0" + data_send[count_string].ToString("X") + " "); }
-      //  else
-      //  { richTextBox1.AppendText(data_send[count_string].ToString("X") + " "); }
-      //  count_string++;
-     // }
-      count_string = 0;
-      richTextBox1.AppendText("\n");
-      send_text_from_line = "";
-    }
-
-
-
-      public Form1()
+	public Form1()
     {
       InitializeComponent();
       var assemblyLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
       var fileVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(assemblyLocation).FileVersion;
       string version = "v." + fileVersion.ToString();
-      label1.Text = version.Substring(0,6) + " - 2023";
+      label1.Text = version.Substring(0,6) + " - 2024";
     }
 
     private void Form1_Load(object sender, EventArgs e)
     {
-      button1.PerformClick();
+	  //string textbox_send_value = textBox3.Text;
+	  //byte textbox_send_BYTES = byte.Parse(textBox3.Text);
+	  //label3.Text = "END STRING";
+	  data_send_END[0] = 255;
+	  data_send_END[1] = 255;
+	  data_send_END[2] = 255;
+	  data_send_END[3] = 255;
+
+	  button4.Text = "ASCII";
+	  button4.BackColor = Color.Red;
+	  button4.ForeColor = Color.Yellow;
+	  button1.PerformClick();
       richTextBox1.BackColor = Color.SkyBlue;
       textBox1.BackColor = Color.SkyBlue;
       if (File.Exists(path_file_settings))
@@ -190,15 +385,16 @@ namespace STRONG_TERMINAL_BASIC
 
         richTextBox1.AppendText("SET BUTTON BYTE TO SEND DATA IN BYTES\n");
         richTextBox1.AppendText("ENTER 16 BYTES LIKE NEXT LINE\n");
-        //richTextBox1.AppendText("1D 34 FF 1A 3E 90 56 11 22 33 D1 B2 C9 F4 C0 B8\n\n");
-        richTextBox1.AppendText("1D34FF1A3E9056112233D1B2C9F4C0B8\n");
-        richTextBox1.AppendText("MAX 32 SYMBOLS FROM 0-9 and A-F\n\n");
 
+        richTextBox1.AppendText("1D 34 FF 1A 3E 90 56 11 22 33 D1 B2 C9 F4 C0 B8\n");
+        richTextBox1.AppendText("MAX 32 SYMBOLS FROM 0-9 and A-F\n\n");
 
         richTextBox1.AppendText("OR SET BUTTON BYTE TO SEND DATA IN ASCII / HEX\n");
         richTextBox1.AppendText("ENTER STRING MESSAGE 16 LETTER / NUMBER LONG\n");
         richTextBox1.AppendText("example : BOARD4RELAY7OFF\n\n");
-      }
+		richTextBox1.AppendText("CODING SYSTEM : Windows-1252\n");
+		richTextBox1.AppendText("LINK to WEB : https://www.ascii-code.com/\n\n");
+	  }
 
     } // END FORM LOAD
 
@@ -206,19 +402,20 @@ namespace STRONG_TERMINAL_BASIC
 
     private void button1_Click(object sender, EventArgs e)
     {    // GET PORTS
-      string[] ports = SerialPort.GetPortNames();
+	  comboBox1.Items.Clear();
+	  string[] ports = SerialPort.GetPortNames();
       richTextBox1.AppendText("rs232 ports found\n\n");
-      comboBox1.Items.Clear();
-
-      foreach (string port in ports)
+	 
+	  foreach (string port in ports)
       {
         richTextBox1.AppendText(port + " is active\n");
         comboBox1.Items.Add(port);
-        comboBox1.SelectedIndex = 0;
-      }
-      var count = comboBox1.Items.Count;
 
-      richTextBox1.AppendText(count + " serial port are active\n");
+      }
+	  
+	  var count = comboBox1.Items.Count;
+
+	  richTextBox1.AppendText(count + " serial port are active\n");
       richTextBox1.ScrollToCaret();
 
       if (LAST_USED_COM_PORT_NAME != "")
@@ -226,11 +423,15 @@ namespace STRONG_TERMINAL_BASIC
         serialPort1.PortName = LAST_USED_COM_PORT_NAME;
         comboBox1.FindString(LAST_USED_COM_PORT_NAME);
         comboBox1.SelectedIndex = comboBox1.FindString(LAST_USED_COM_PORT_NAME);
-      }
+		comboBox1.SelectedIndex = comboBox1.FindString(ports[0]);
+	  }
       else
-      { LAST_USED_COM_PORT_NAME = ""; }
-
-    }
+      { LAST_USED_COM_PORT_NAME = "COM1";
+        comboBox1.SelectedIndex = comboBox1.FindString(ports[0]);
+		serialPort1.PortName = LAST_USED_COM_PORT_NAME;
+	  }
+	 
+	}
 
     private void button2_Click(object sender, EventArgs e)
     {     // CONNECT SERIAL PORT
@@ -306,7 +507,7 @@ namespace STRONG_TERMINAL_BASIC
         comboBox1.Enabled = true;
         comboBox2.Enabled = true;
 
-        richTextBox1.BackColor = Color.SkyBlue;
+		richTextBox1.BackColor = Color.SkyBlue;
         textBox1.BackColor = Color.SkyBlue;
       }
       catch (Exception ex)
@@ -321,19 +522,20 @@ namespace STRONG_TERMINAL_BASIC
         button2.UseVisualStyleBackColor = true;
 
         comboBox1.Enabled = true;
-        comboBox2.Enabled = true;
+		
+		comboBox2.Enabled = true;
 
         richTextBox1.BackColor = Color.SkyBlue;
         textBox1.BackColor = Color.SkyBlue;
 
       }
-        var items = comboBox1.Items.Count;
-          while (items > 0)
-          {
-            comboBox1.Items.Clear();
-            items--;
-          }
-        button1.PerformClick();
+       // var items = comboBox1.Items.Count;
+        //  while (items > 0)
+        //  {
+       //     comboBox1.Items.Clear();
+       //     items--;
+       //   }
+	  button1.PerformClick();
 
     }// END BUTTON DISCONNECT
 
@@ -367,37 +569,15 @@ namespace STRONG_TERMINAL_BASIC
       
       if (flag_ASCII_HEX == true) // ASCII MODE ACTIVE
       {
-        //ij = 31;
-        //while (data_receive.Length > ij)
-        //{
-        //  if (data_receive[ij] == 0) { check_zeros_in_tail++; }
-        //  if (data_receive[ij] != 0) { break; }
-        //  ij--;
-       // }
-        //richTextBox1.AppendText("check_zeros_in_tail = " + check_zeros_in_tail + "\n");
-       // ij = 0;
-
-
         while ( ij < data_receive.Length)
         {
           if (data_receive[ij] == 0 || data_receive[ij] == '\0')
-          { break; }// data_receive[ij] = 0x30; }
+          { break; }
           received_read_string += Encoding.ASCII.GetString(data_receive)[ij];
-          //if (data_receive[ij] != 0)
-          //{ received_read_string += Encoding.ASCII.GetString(data_receive)[ij]; }
           ij++;
         }
         ij = 0;
 
-        // if (received_read_string.Contains("0") && checkBox1.Checked)
-        // {
-        //   richTextBox1.AppendText("receive in ASCII >>>\n");
-        //   richTextBox1.AppendText("THE STRING CONTAINS ZERO BYTES !!!\n");
-        //   richTextBox1.AppendText(received_read_string + "\n");
-        //   richTextBox1.ScrollToCaret();
-        // }
-        // else
-        // {
         if (received_read_string.EndsWith("\n"))
         {
           richTextBox1.AppendText(">>> receive in ASCII\n");
@@ -412,9 +592,6 @@ namespace STRONG_TERMINAL_BASIC
           richTextBox1.AppendText("\n");
           richTextBox1.ScrollToCaret();
         }
-
-        // }
-        //received_read_string = "";
       }
       else
       {
@@ -422,7 +599,6 @@ namespace STRONG_TERMINAL_BASIC
         // deconding ASCII FROM RECEIVED BYTES
         //received_read_string = Encoding.ASCII.GetString(data_receive);
         //data_receive = Encoding.ASCII.GetBytes(received_read_string);
-
         // check is sum of two next bytes are zero or not
         ij = 31;
 
@@ -452,10 +628,7 @@ namespace STRONG_TERMINAL_BASIC
 
         if (check_hex_for_zeros > 0 && checkBox1.Checked)
         {
-          //richTextBox1.AppendText("receive in HEX >>>\n");
           richTextBox1.AppendText("THE STRING CONTAINS ZERO BYTES !!!\n");
-         // richTextBox1.AppendText(received_read_string + "\n");
-          //richTextBox1.ScrollToCaret();
         }
 
          while (ij < data_receive.Length - check_zeros_in_tail)
@@ -463,23 +636,20 @@ namespace STRONG_TERMINAL_BASIC
             if (data_receive[ij] < 16)
             {
               richTextBox1.AppendText("0" + data_receive[ij].ToString("X") + " ");
-            //received_read_string += "0" + data_receive[ij].ToString("X") + " ";
-            //richTextBox1.ScrollToCaret();
-          }
+             }
             else if (data_receive[ij] > 15)
             {
               richTextBox1.AppendText(data_receive[ij].ToString("X") + " ");
-            //received_read_string += data_receive[ij].ToString("X") + " ";
-           // richTextBox1.ScrollToCaret();
-          }
+
+             }
             if (ij == 15)
               {
             richTextBox1.AppendText("\n"); richTextBox1.AppendText(">>> ");
             richTextBox1.ScrollToCaret();
-          }
+             }
             ij++;
          }
-        ij = 0;
+            ij = 0;
 
         richTextBox1.AppendText("\n\n");
         richTextBox1.ScrollToCaret();
@@ -506,134 +676,217 @@ namespace STRONG_TERMINAL_BASIC
         richTextBox1.AppendText("\nASCII mode VIEW in RECEIVE is active\n");
         richTextBox1.ScrollToCaret();
         button4.Text = "ASCII";
-      }
+		button4.BackColor = Color.Red;
+		button4.ForeColor = Color.Yellow;
+	  }
       else
       if (flag_ASCII_HEX == true)
       { flag_ASCII_HEX = false;
         richTextBox1.AppendText("\nHEX mode VIEW in RECEIVE is active\n");
         richTextBox1.ScrollToCaret();
         button4.Text = "HEX";
-      }
+		button4.BackColor = Color.LimeGreen;
+	  }
 
     }
 
     private void button6_Click(object sender, EventArgs e)
-    {   // BUTTON SEND TEXT FROM LINE
-      string send_text = textBox1.Text;
-      byte print_send_count = 0;
-      char[] space_count = send_text.ToCharArray();
-      byte check_space_count = 0;
-      //============= TEST SPACE IN SEND LINE ==========================
-      
-      //============= TEST SPACE IN SEND LINE ==========================
-      if (flag_BYTE == false)
+    {   // BUTTON SEND TEXT FROM TEXT LINE
+       send_text = textBox1.Text;
+	   send_text_END = textBox2.Text;
+	  //byte print_send_count = 0;
+	  byte print_send_length = (byte)textBox1.TextLength;
+	  byte send_text_END_FRAME_bytes = (byte)textBox2.TextLength;
+
+      //byte[] text_to_bytes = new byte[64];
+
+      if (send_text.Length > 0)
       {
-        if (textBox1.TextLength > 0)
-        {
-          richTextBox1.AppendText("\n\n<<< send\n");
-          richTextBox1.AppendText("<<< " + send_text + "\n\n");
-          richTextBox1.ScrollToCaret();
-          if (serialPort1.IsOpen)
-          {
-            serialPort1.Write(send_text);
-            serialPort1.DiscardInBuffer();
-            serialPort1.DiscardOutBuffer();
-          }
-          else
-          {
-            serialPort1.Close();
-            richTextBox1.AppendText("SERIAL PORT IS CLOSED !!!\n\n");
-            button1.PerformClick();
-          }
+        richTextBox1.AppendText("print_send_length = " + print_send_length + "\n");
+		richTextBox1.ScrollToCaret();
+	  }
 
-        }
-        else
-        { richTextBox1.AppendText("TYPE DATA IN TEXT LINE !!!\n"); }
-
-      }
-      else
+      if (send_text_END.Length > 0)
       {
-        if (textBox1.TextLength > 0)
-        {
-          //==================================================================
-          // ADD CODE TO EDIT SEND DATA BYTES WITH SPACE BETWEEN BYTES
-          //==================================================================
-          send_byte_to_serial();
-          richTextBox1.AppendText("<<< send\n");
+        richTextBox1.AppendText("send_text_END_FRAME_bytes = " + send_text_END_FRAME_bytes + "\n");
+		richTextBox1.ScrollToCaret();
+	  }
 
-          while (print_send_count < send_text.Length / 2)
-          { richTextBox1.AppendText(data_send[print_send_count].ToString("X") + " ");
-            print_send_count+=1;
-          }
-
-          print_send_count = 0;
-         // richTextBox1.AppendText("send_text.Length = " + send_text.Length);
-          richTextBox1.AppendText("\n\n");
-          
-          if (serialPort1.IsOpen)
-          {
-            serialPort1.Write(data_send, 0, send_text.Length);
-            serialPort1.DiscardInBuffer();
-            serialPort1.DiscardOutBuffer();
-          }
-          else
-          { serialPort1.Close();
-            richTextBox1.AppendText("SERIAL PORT IS CLOSED !!!\n\n");
-            button1.PerformClick();
-          }
-          //serialPort1.Write(255.ToString());
-
-
-        }
-        else
-        {
-          richTextBox1.AppendText("TYPE DATA IN TEXT LINE !!!\n");
-        }
-        richTextBox1.ScrollToCaret();
-
-      }
-
-      while (print_send_count < send_text.Length)
+      if (send_text.Length > 0 && serialPort1.IsOpen)
       {
-        data_send[print_send_count] = 0;
-        print_send_count++;
-      }
-      print_send_count = 0;
-    }
+        richTextBox1.AppendText("\n<<< send\n");
+        richTextBox1.AppendText("<<< " + send_text + send_text_END + "\n\n");
+		richTextBox1.ScrollToCaret();
+	  }
+	  
 
-    private void button8_Click(object sender, EventArgs e)
-    {     // BUTTON BYTE
-      if (flag_BYTE == false) // BYTE MODE IS OFF
+	  //=========== WORK FOR STRINGS + FF FF FF ================
+	  if (send_state_button == 0 && send_text.Length > 0)
       {
-        flag_BYTE = true;
-        button8.BackColor = Color.LimeGreen;
-        button8.ForeColor = Color.Blue;
-        button8.Text = "BYTE";
-        richTextBox1.AppendText("SEND DATA IN BYTES\n");
-        richTextBox1.AppendText("ENTER 16 BYTES LIKE NEXT LINE\n");
-        //richTextBox1.AppendText("1D 34 FF 1A 3E 90 56 11 22 33 D1 B2 C9 F4 C0 B8\n\n");
-        richTextBox1.AppendText("1D34FF1A3E9056112233D1B2C9F4C0B8\n");
-        richTextBox1.AppendText("MAX 32 SYMBOLS FROM 0-9 and A-F\n\n");
-        richTextBox1.ScrollToCaret();
-      }
-      else
-      {      // BYTE MODE IS ON
-        flag_BYTE = false;
-        button8.BackColor = Color.Red;
-        button8.ForeColor = Color.Yellow;
-        button8.Text = "ASCII";
-        richTextBox1.AppendText("SEND DATA IN ASCII\n");
-        richTextBox1.AppendText("ENTER STRING MESSAGE 16 LETTER / NUMBER LONG\n");
-        richTextBox1.AppendText("example : BOARD4RELAY15OFF\n\n");
-        richTextBox1.ScrollToCaret();
-      }
-      
-      //button8.BackColor = Color.LimeGreen;
-      //button8.ForeColor = Color.Blue;
+        send_in_string();
+		
+	  }
+	  //serialPort1.Write(data_send_END, 0, 3); //array 0xFF, 0xFF, 0xFF + 0xFF
+	  //=====================================
 
-    }
+	  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	  if (send_END_state_button == 0 && send_text_END.Length > 0)
+	  {
+		send_in_string_END();
 
-    private void button7_Click(object sender, EventArgs e)
+	  }
+	  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+	  // ======== CONVERT t0.txt="22222" WORK STRING TO BYTES ARRAY TO SEND IN BYTE MODE
+
+	  if (send_state_button == 1 && send_text.Length > 0)
+	  {
+        send_in_string_in_bytes();
+		
+	  }
+
+	  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	  if (send_END_state_button == 1 && send_text_END.Length > 0)
+	  {
+		send_in_string_in_bytes_END();
+
+	  }
+	  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+	  //serialPort1.Write(data_send_END, 0, 3); //array 0xFF, 0xFF, 0xFF + 0xFF
+
+	  //=============================================================
+
+
+	  //=============== CONVERT HEX STRING  WORK TO CLEAR BYTES ===============
+	  //=============== AA 11 22 33 44 55 66 77 88 99 AA BB CC DD EE FF ===============
+	  //=============== 0xAA 0x11 0x22 0x33 0x44 0x55 0x66 0x77 ===============
+	  //==============  0x88 0x99 0xAA 0xBB 0xCC 0xDD 0xEE 0xFF ===============
+
+	  if (send_state_button == 2 && send_text.Length > 0)
+      {
+        send_HEX_string_in_HEX_bytes();
+        //=============== CONVERT HEX STRING  WORK TO CLEAR BYTES ===============
+      }
+
+	  if (send_END_state_button == 2 && send_text_END.Length > 0)
+	  {
+		send_HEX_string_in_HEX_bytes_END();
+
+	  }
+
+	}
+
+
+	byte send_state_button = 0;
+	private void button8_Click(object sender, EventArgs e)
+    {     // BUTTON BYTE / ASCII FOR SEND COMMAND TEXT
+	  send_state_button++;
+	  if (send_state_button > 2)
+	  { send_state_button = 0; }
+
+	  if (send_state_button == 0) // BYTE MODE IS OFF
+      {
+		//flag_BYTE = true;
+		//label3.Text = "END STRING";
+		button8.BackColor = Color.Red;
+		button8.ForeColor = Color.Yellow;
+		button8.Text = "ASCII";
+		richTextBox1.AppendText("SEND STRING DATA IN ASCII\n");
+		richTextBox1.AppendText("ENTER STRING MESSAGE 16 LETTER / NUMBER LONG\n");
+		richTextBox1.AppendText("example : BOARD4RELAY15OFF\n");
+		richTextBox1.AppendText("example send : BOARD4RELAY15OFF\n\n");
+		richTextBox1.ScrollToCaret();
+	  }
+      else if (send_state_button == 1)
+	  {      // BYTE MODE IS ON
+       // flag_BYTE = false;
+		//label3.Text = "END BYTES";
+		
+		button8.BackColor = Color.LimeGreen;
+		button8.ForeColor = Color.Blue;
+		button8.Text = "BYTE";
+		richTextBox1.AppendText("SEND ASCII STRING DATA IN BYTES\n");
+		richTextBox1.AppendText("ENTER 16 BYTES LIKE NEXT LINE\n");
+		richTextBox1.AppendText("ENTER STRING MESSAGE 16 LETTER / NUMBER LONG\n");
+		richTextBox1.AppendText("example : BOARD4RELAY15OFF\n");
+		richTextBox1.AppendText("example send : 42 4F 41 52 44 34 52 45 4C 41 59 31 35 4F 46 46\n\n");
+		richTextBox1.ScrollToCaret();
+	  }
+
+	  else if (send_state_button == 2)
+	  {      // BYTE MODE IS ON
+		//flag_BYTE = false;
+		//label3.Text = "END BYTES";
+		button8.BackColor = Color.Blue;
+		button8.ForeColor = Color.Yellow;
+		button8.Text = "HEX";
+		richTextBox1.AppendText("SEND DATA FROM HEX STRING\n");
+		richTextBox1.AppendText("ENTER 16 BYTES LIKE NEXT LINE\n");
+		richTextBox1.AppendText("ENTER STRING MESSAGE 16 LETTER / NUMBER LONG\n");
+		richTextBox1.AppendText("example : 42 4F 41 52 44 34 52 45 4C 41 59 31 35 4F 46 46\n");
+		richTextBox1.AppendText("example : 42 4F 41 52 44 34 52 45 4C 41 59 31 35 4F 46 46\n\n");
+		richTextBox1.ScrollToCaret();
+	  }
+
+	}
+
+	byte send_END_state_button = 0;
+	private void button10_Click(object sender, EventArgs e)
+	{ // BUTTON BYTE / ASCII FOR SEND END LINE TEXT
+	  //flag_BYTE_END
+	  send_END_state_button++;
+	  if (send_END_state_button > 2)
+	  { send_END_state_button = 0; }
+
+	  if (send_END_state_button == 0) // BYTE MODE IS OFF
+	  {
+		//flag_BYTE = true;
+		//label3.Text = "END STRING";
+		button10.BackColor = Color.Red;
+		button10.ForeColor = Color.Yellow;
+		button10.Text = "ASCII";
+		richTextBox1.AppendText("SEND STRING DATA IN ASCII\n");
+		richTextBox1.AppendText("ENTER STRING MESSAGE G\n");
+		richTextBox1.AppendText("MAX 11 LETTER / NUMBER LONG\n");
+		richTextBox1.AppendText("example : TRANSMITOFF\n");
+		richTextBox1.AppendText("example send : TRANSMITOFF\n\n");
+		richTextBox1.ScrollToCaret();
+		richTextBox1.ScrollToCaret();
+	  }
+	  else if (send_END_state_button == 1)
+	  {      // BYTE MODE IS ON
+			 // flag_BYTE = false;
+			 //label3.Text = "END BYTES";
+
+		button10.BackColor = Color.LimeGreen;
+		button10.ForeColor = Color.Blue;
+		button10.Text = "BYTE";
+		richTextBox1.AppendText("SEND ASCII STRING DATA IN BYTES\n");
+		richTextBox1.AppendText("ENTER 11 BYTES LIKE NEXT LINE\n");
+		richTextBox1.AppendText("example : TRANSMITOFF\n");
+		richTextBox1.AppendText("example send : 54 52 41 4E 53 4D 49 54 4F 46 46\n\n");
+		richTextBox1.ScrollToCaret();
+	  }
+
+	  else if (send_END_state_button == 2)
+	  {      // HEX MODE IS ON
+			 //flag_BYTE = false;
+			 //label3.Text = "END BYTES";
+		button10.BackColor = Color.Blue;
+		button10.ForeColor = Color.Yellow;
+		button10.Text = "HEX";
+		richTextBox1.AppendText("SEND DATA FROM HEX STRING\n");
+		richTextBox1.AppendText("ENTER HEX STRING MESSAGE 8 LETTER / NUMBER LONG\n");
+		richTextBox1.AppendText("MAX 8 SYMBOLS FROM 0-9 and A-F\n");
+		richTextBox1.AppendText("example : AA BB CC DD\n");
+		richTextBox1.AppendText("example send : AA BB CC DD\n\n");
+		richTextBox1.ScrollToCaret();
+	  }
+	}
+
+	private void button7_Click(object sender, EventArgs e)
     {     // BUTTON SETTINGS
       richTextBox1.AppendText("WILL WORK LATER\n\n");
       //richTextBox1.AppendText("ENTER STRING MESSAGE 16 LETTER / NUMBER LONG\n");
@@ -642,7 +895,11 @@ namespace STRONG_TERMINAL_BASIC
       
       richTextBox1.ScrollToCaret();
     }
-    // ============== NEXT CODE PLACE HERE ================
+
+	
+
+
+	// ============== NEXT CODE PLACE HERE ================
 
 
   }
