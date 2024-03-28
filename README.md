@@ -7,4 +7,4 @@ have a three way to send data :
 2. ASCII string symbols converted to them BYTES values according ASCII table.
 3. HEX STRING convereted directly to same HEX BYTES VALUES SENDED TROUGH SERIAL COM PORT
 
-<img src="/strong1.jpg" alt="Alt text" title="Optional title">
+<img src="images/strong1.jpg" alt="Alt text" title="Optional title">
