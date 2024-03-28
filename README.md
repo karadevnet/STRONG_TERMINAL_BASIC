@@ -18,15 +18,15 @@ in your work you can use many stron terminal programs on you desktop started in 
 
 <img src="images/strong1.jpg">
 
-<img src="images/strong6.jpg" alt="Alt text" title="Optional title">
+<img src="images/strong6.jpg">
 
 
-<img src="images/strong7.jpg" alt="Alt text" title="Optional title">
+<img src="images/strong7.jpg">
 
-<img src="images/strong8.jpg" alt="Alt text" title="Optional title">
+<img src="images/strong8.jpg">
 
-<img src="images/strong9.jpg" alt="Alt text" title="Optional title">
+<img src="images/strong9.jpg">
 
-<img src="images/strong10.jpg" alt="Alt text" title="Optional title">
+<img src="images/strong10.jpg">
 
-<img src="images/strong11.jpg" alt="Alt text" title="Optional title">
+<img src="images/strong11.jpg">
