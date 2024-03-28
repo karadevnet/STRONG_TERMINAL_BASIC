@@ -16,7 +16,7 @@ in second field you can set a bytes, that always are same for the device protoco
 
 in your work you can use many stron terminal programs on you desktop started in same time. if you have virtual serial protocols, you can test what is send is that is received in second terminal. also can use other serial terminals to check proper communication.
 
-<img src="images/strong1.jpg" alt="Alt text" title="Optional title">
+<img src="images/strong1.jpg">
 
 <img src="images/strong6.jpg" alt="Alt text" title="Optional title">
 
